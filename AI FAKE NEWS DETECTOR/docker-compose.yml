@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  # ── Endee Vector Database (local Docker server) ──────────────────────────────
+  endee-server:
+    image: endeeio/endee-server:latest
+    container_name: endee-server
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./endee-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── FastAPI Backend ───────────────────────────────────────────────────────────
+  backend:
+    build: ./backend
+    container_name: fakenews-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - ENDEE_URL=http://endee-server:8080/api/v1
+      - DATABASE_URL=sqlite:///./fakenews.db
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      endee-server:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+
+  # ── React/Vite Frontend ───────────────────────────────────────────────────────
+  frontend:
+    build: ./frontend
+    container_name: fakenews-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+
+volumes:
+  endee-data:

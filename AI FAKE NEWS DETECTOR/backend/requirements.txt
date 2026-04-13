@@ -1,0 +1,29 @@
+fastapi==0.104.1
+uvicorn==0.23.2
+sqlalchemy
+pydantic
+python-dotenv
+requests==2.31.0
+
+# Scraping
+beautifulsoup4==4.12.2
+cloudscraper==1.2.71
+
+# RAG Stack — LLM + Search
+langchain-google-genai>=2.0.0
+tavily-python>=0.3.0
+
+# Endee vector database SDK (connects to local Docker server on port 8080)
+endee>=0.1.25
+
+# Semantic embeddings (local, no GPU required — ~90 MB model download on first run)
+sentence-transformers>=2.2.0
+
+# HuggingFace dataset loading (for seed_endee.py)
+datasets>=2.14.0
+
+# Optional: free LLM fallback when GOOGLE_API_KEY not set
+# g4f
+
+# Optional: free web search fallback when TAVILY_API_KEY not set
+# duckduckgo-search

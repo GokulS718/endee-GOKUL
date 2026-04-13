@@ -1,6 +1,6 @@
 services:
   endee-oss:
-    image: endee-oss:latest
+    image: endeeio/endee-server:latest
     container_name: endee-oss
     ports:
       - "8080:8080"
@@ -25,7 +25,38 @@ services:
       - endee-data:/data
     restart: unless-stopped
 
+  # ── FastAPI Backend ───────────────────────────────────────────────────────────
+  backend:
+    build: "./AI FAKE NEWS DETECTOR/backend"
+    container_name: fakenews-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - ENDEE_URL=http://endee-oss:8080/api/v1
+      - DATABASE_URL=sqlite:///./fakenews.db
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      - endee-oss
+    volumes:
+      - "./AI FAKE NEWS DETECTOR/backend:/app"
+
+  # ── React/Vite Frontend ───────────────────────────────────────────────────────
+  frontend:
+    build: "./AI FAKE NEWS DETECTOR/frontend"
+    container_name: fakenews-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      - "./AI FAKE NEWS DETECTOR/frontend:/app"
+      - fakenews_node_modules:/app/node_modules
+    depends_on:
+      - backend
+
 volumes:
+  fakenews_node_modules:
   # Modify the 'device' path below to change the host directory used for data persistence
   endee-data:
     # driver: local
